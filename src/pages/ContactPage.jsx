@@ -16,7 +16,7 @@ const ContactPage = () => {
                   type="email"
                   class="form-control"
                   id="Name"
-                  placeholder="Enter name"
+                  placeholder="Enter name Hello"
                 />
               </div>
               <div class="form my-3">
