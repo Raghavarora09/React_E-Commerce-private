@@ -1,0 +1,53 @@
+name: Cleanup Merged Remote Branches (Older than 30 Minutes - Testing)
+
+on:
+  schedule:
+    # Runs every hour at 30 minutes past the hour for frequent testing (e.g., 8:30, 9:30, etc. UTC)
+    - cron: '10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch all branches
+        run: |
+          git fetch --all
+
+      - name: Delete old merged branches
+        env:
+          # Ensure this token has 'delete' permissions on your repository.
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          # Define age threshold in seconds (30 minutes * 60 seconds/minute)
+          SECONDS_OLD=$((30 * 60)) 
+          THRESHOLD_MINUTES=$(( SECONDS_OLD / 60 ))
+
+          # Get the current date in seconds since epoch
+          NOW=$(date +%s)
+
+          # Get all remote branches merged into development
+          # Excludes 'main', 'master', and 'development' from deletion
+          for branch in $(git branch -r --merged origin/development | grep -vE 'origin/(main|development|master)$' | sed 's|origin/||'); do
+            echo "Checking branch: $branch"
+
+            # Get last commit date (in epoch seconds) of the branch
+            LAST_COMMIT_DATE=$(git log -1 --format=%ct origin/$branch)
+
+            # Calculate age in seconds
+            AGE=$(( NOW - LAST_COMMIT_DATE ))
+            AGE_MINUTES=$(( AGE / 60 ))
+
+            echo "  -> Last commit was $AGE_MINUTES minutes ago (Threshold: $THRESHOLD_MINUTES minutes)"
+
+            if [ "$AGE" -ge "$SECONDS_OLD" ]; then
+              echo "  -> Deleting $branch (merged and older than $THRESHOLD_MINUTES minutes)"
+              # 🚀 Actual deletion command is executed here
+              git push origin --delete "$branch"
+            else
+              echo "  -> Skipping $branch (merged but recent)"
+            fi
+          done
