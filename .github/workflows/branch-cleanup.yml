@@ -31,7 +31,7 @@ jobs:
 
           # Get all remote branches merged into development
           # Excludes 'main', 'master', and 'development' from deletion
-          for branch in $(git branch -r --merged origin/development | grep -vE 'origin/(main|development|master)$' | sed 's|origin/||'); do
+          for branch in $(git branch -r --merged origin/dev | grep -vE 'origin/(main|development|master)$' | sed 's|origin/||'); do
             echo "Checking branch: $branch"
 
             # Get last commit date (in epoch seconds) of the branch
