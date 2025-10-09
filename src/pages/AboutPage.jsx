@@ -8,7 +8,9 @@ const AboutPage = () => {
         <h1 className="text-center">About Us</h1>
         <hr />
         <p className="lead text-center">
+          testing ..
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum
+          testing.....
           facere doloremque veritatis odit similique sequi. Odit amet fuga nam
           quam quasi facilis sed doloremque saepe sint perspiciatis explicabo
           totam vero quas provident ipsam, veritatis nostrum velit quos
@@ -18,6 +20,7 @@ const AboutPage = () => {
           exercitationem tempora molestias. Ad consequuntur veniam sequi ullam
           tempore vel tenetur soluta dolore sunt maxime aliquam corporis est,
           quo saepe dolorem optio minus sint nemo totam dolorum! Reprehenderit
+          dfghjkl
           delectus expedita a alias nam recusandae illo debitis repellat libero,
           quasi explicabo molestiae saepe, dolorem tempore itaque eveniet quam
           dignissimos blanditiis excepturi harum numquam vel nihil? Ipsum
