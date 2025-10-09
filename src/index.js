@@ -38,8 +38,6 @@ root.render(
           <Route path="/checkout" element={<Checkout />} />
           <Route path="*" element={<PageNotFound />} />
           <Route path="/product/*" element={<PageNotFound />} />
-          <Route path="/random/*" element={<PageNotFound />} />
-
         </Routes>
       </Provider>
     </ScrollToTop>
