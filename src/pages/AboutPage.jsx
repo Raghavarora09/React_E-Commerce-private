@@ -14,7 +14,7 @@ const AboutPage = () => {
           facere doloremque veritatis odit similique sequi. Odit amet fuga nam
           quam quasi facilis sed doloremque saepe sint perspiciatis explicabo
           totam vero quas provident ipsam, veritatis nostrum velit quos
-          recusandae est mollitia esse fugit dolore laudantium. Ex vel explicabo
+          recusandae est mollitia eswertyuioiuhgfdsdfghjklse fugit dolore laudantium. Ex vel explicabo
           earum unde eligendi autem praesentium, doloremque distinctio nesciunt
           porro tempore quis eaque labore voluptatibus ea necessitatibus
           exercitationem tempora molestias. Ad consequuntur veniam sequi ullam
