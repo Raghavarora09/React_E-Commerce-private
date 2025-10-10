@@ -1,7 +1,6 @@
 name: Cleanup Merged Remote Branches (Older than 30 Minutes - Testing)
 
 on:
-  # This section triggers the workflow immediately when you push to 'dev'
   push:
     branches:
       - dev
