@@ -2,9 +2,12 @@ name: Cleanup Merged Remote Branches (Older than 30 Minutes - Testing)
 
 on:
   schedule:
-    # Runs every hour at 30 minutes past the hour for frequent testing (e.g., 8:30, 9:30, etc. UTC)
+    # Runs every hour at 10 minutes past the hour for frequent testing (e.g., 8:10, 9:10, etc. UTC)
+    # NOTE: This trigger only runs if the workflow file is on the DEFAULT branch (e.g., main/master).
     - cron: '10 * * * *'
   workflow_dispatch:
+    # Optional: Restrict manual runs to the 'dev' branch for testing purposes.
+    # If the workflow is on the 'dev' branch, this is redundant but harmless.
     branches:
       - dev
 
@@ -13,7 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
+        # Use 'dev' as the ref to ensure you check out the correct branch for context
         uses: actions/checkout@v4
+        with:
+          ref: 'dev' 
 
       - name: Fetch all branches
         run: |
@@ -21,7 +27,6 @@ jobs:
 
       - name: Delete old merged branches
         env:
-          # Ensure this token has 'delete' permissions on your repository.
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           # Define age threshold in seconds (30 minutes * 60 seconds/minute)
@@ -31,9 +36,9 @@ jobs:
           # Get the current date in seconds since epoch
           NOW=$(date +%s)
 
-          # Get all remote branches merged into development
-          # Excludes 'main', 'master', and 'development' from deletion
-          for branch in $(git branch -r --merged origin/dev | grep -vE 'origin/(main|development|master)$' | sed 's|origin/||'); do
+          # Get all remote branches merged into 'origin/dev'
+          # This ensures only branches merged into 'dev' are considered for deletion.
+          for branch in $(git branch -r --merged origin/dev | grep -vE 'origin/(main|development|master|dev)$' | sed 's|origin/||'); do
             echo "Checking branch: $branch"
 
             # Get last commit date (in epoch seconds) of the branch
@@ -47,7 +52,7 @@ jobs:
 
             if [ "$AGE" -ge "$SECONDS_OLD" ]; then
               echo "  -> Deleting $branch (merged and older than $THRESHOLD_MINUTES minutes)"
-              # 🚀 Actual deletion command is executed here
+              # 🚀 Actual deletion command
               git push origin --delete "$branch"
             else
               echo "  -> Skipping $branch (merged but recent)"
