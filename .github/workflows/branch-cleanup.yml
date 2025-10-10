@@ -32,8 +32,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          # Define age threshold in seconds (30 minutes * 60 seconds/minute)
-          SECONDS_OLD=$((30 * 60)) 
+          # Define age threshold in seconds (2 minutes * 60 seconds/minute)
+          SECONDS_OLD=$((2 * 60)) 
           THRESHOLD_MINUTES=$(( SECONDS_OLD / 60 ))
 
           # Get the current date in seconds since epoch
