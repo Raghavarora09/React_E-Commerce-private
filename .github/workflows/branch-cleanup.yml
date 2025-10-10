@@ -17,6 +17,8 @@ on:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write 
     steps:
       - name: Checkout repository
         # Use 'dev' as the ref to ensure you check out the correct branch for context
@@ -30,10 +32,8 @@ jobs:
         run: git fetch --all
 
       - name: Delete old merged branches
-        # 💡 Explicitly set the shell to bash for consistency and debugging 
+        # NO env block needed here, we'll use the secret directly in the run command
         shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "--- Starting Branch Cleanup Script ---"
           
@@ -42,6 +42,11 @@ jobs:
           THRESHOLD_MINUTES=$(( SECONDS_OLD / 60 ))
           echo "Current Deletion Threshold: Branches older than $THRESHOLD_MINUTES minutes (last commit date)."
 
+          # Set the token variable from the secret
+          # Injecting the token into the URL is the most reliable method for push operations
+          GH_TOKEN="${{ secrets.GH_TOKEN }}"
+          REPO_URL="https://${GH_TOKEN}@github.com/${{ github.repository }}"
+          
           # Get the current date in seconds since epoch
           NOW=$(date +%s)
 
@@ -59,7 +64,7 @@ jobs:
             echo "-------------------------------------"
             echo "Checking branch: $branch"
 
-            # Get last commit date (in epoch seconds) of the branch
+            # The git log command uses the local clone, so it works fine.
             LAST_COMMIT_DATE=$(git log -1 --format=%ct origin/$branch)
 
             # Calculate age in seconds
@@ -70,8 +75,9 @@ jobs:
 
             if [ "$AGE" -ge "$SECONDS_OLD" ]; then
               echo "  -> 🗑️ Deleting $branch (merged and older than $THRESHOLD_MINUTES minutes)"
-              # 🚀 Actual deletion command
-              git push origin --delete "$branch"
+              
+              # 🚀 Actual deletion command - Pushing using the tokenized URL
+              git push "$REPO_URL" --delete "$branch"
             else
               echo "  -> ⏭️ Skipping $branch (merged but recent)"
             fi
