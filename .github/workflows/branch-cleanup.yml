@@ -1,6 +1,9 @@
 name: Cleanup Merged Remote Branches (Older than 30 Minutes - Testing)
 
 on:
+  push:
+    branches:
+      - dev
   schedule:
     # Runs every hour at 10 minutes past the hour for frequent testing (e.g., 8:10, 9:10, etc. UTC)
     # NOTE: This trigger only runs if the workflow file is on the DEFAULT branch (e.g., main/master).
