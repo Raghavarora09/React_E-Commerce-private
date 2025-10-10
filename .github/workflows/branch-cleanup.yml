@@ -5,6 +5,8 @@ on:
     # Runs every hour at 30 minutes past the hour for frequent testing (e.g., 8:30, 9:30, etc. UTC)
     - cron: '10 * * * *'
   workflow_dispatch:
+    branches:
+      - dev
 
 jobs:
   cleanup:
