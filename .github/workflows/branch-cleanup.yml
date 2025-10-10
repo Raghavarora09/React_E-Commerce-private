@@ -1,16 +1,16 @@
 name: Cleanup Merged Remote Branches (Older than 30 Minutes - Testing)
 
 on:
+  # This section triggers the workflow immediately when you push to 'dev'
   push:
     branches:
       - dev
+      
   schedule:
-    # Runs every hour at 10 minutes past the hour for frequent testing (e.g., 8:10, 9:10, etc. UTC)
-    # NOTE: This trigger only runs if the workflow file is on the DEFAULT branch (e.g., main/master).
+    # NOTE: This trigger only runs if the workflow file is on the DEFAULT branch.
     - cron: '10 * * * *'
+    
   workflow_dispatch:
-    # Optional: Restrict manual runs to the 'dev' branch for testing purposes.
-    # If the workflow is on the 'dev' branch, this is redundant but harmless.
     branches:
       - dev
 
@@ -23,25 +23,40 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: 'dev' 
+          # Fetch depth 0 ensures all branches are available for git log and branch checks
+          fetch-depth: 0 
 
-      - name: Fetch all branches
-        run: |
-          git fetch --all
+      - name: Fetch all branches (Required for accurate merged checks)
+        run: git fetch --all
 
       - name: Delete old merged branches
+        # 💡 Explicitly set the shell to bash for consistency and debugging 
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          # Define age threshold in seconds (2 minutes * 60 seconds/minute)
+          echo "--- Starting Branch Cleanup Script ---"
+          
+          # Define age threshold in seconds (2 minutes * 60 seconds/minute for testing)
           SECONDS_OLD=$((2 * 60)) 
           THRESHOLD_MINUTES=$(( SECONDS_OLD / 60 ))
+          echo "Current Deletion Threshold: Branches older than $THRESHOLD_MINUTES minutes (last commit date)."
 
           # Get the current date in seconds since epoch
           NOW=$(date +%s)
 
-          # Get all remote branches merged into 'origin/dev'
-          # This ensures only branches merged into 'dev' are considered for deletion.
-          for branch in $(git branch -r --merged origin/dev | grep -vE 'origin/(main|development|master|dev)$' | sed 's|origin/||'); do
+          # Find branches merged into 'origin/dev', excluding protected branches
+          MERGED_BRANCHES=$(git branch -r --merged origin/dev | grep -vE 'origin/(main|development|master|dev)$' | sed 's|origin/||')
+          
+          if [ -z "$MERGED_BRANCHES" ]; then
+            echo "No merged branches found (or they are protected branches)."
+            exit 0
+          fi
+
+          echo "Found merged branches: $MERGED_BRANCHES"
+          
+          for branch in $MERGED_BRANCHES; do
+            echo "-------------------------------------"
             echo "Checking branch: $branch"
 
             # Get last commit date (in epoch seconds) of the branch
@@ -54,10 +69,11 @@ jobs:
             echo "  -> Last commit was $AGE_MINUTES minutes ago (Threshold: $THRESHOLD_MINUTES minutes)"
 
             if [ "$AGE" -ge "$SECONDS_OLD" ]; then
-              echo "  -> Deleting $branch (merged and older than $THRESHOLD_MINUTES minutes)"
+              echo "  -> 🗑️ Deleting $branch (merged and older than $THRESHOLD_MINUTES minutes)"
               # 🚀 Actual deletion command
               git push origin --delete "$branch"
             else
-              echo "  -> Skipping $branch (merged but recent)"
+              echo "  -> ⏭️ Skipping $branch (merged but recent)"
             fi
           done
+          echo "--- Cleanup Script Finished ---"
